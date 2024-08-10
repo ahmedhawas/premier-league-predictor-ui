@@ -1,25 +1,24 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
+import CreateLeague from './pages/CreateLeague';
+import InviteUsers from './pages/InviteUsers';
+import Matches from './pages/Matches';
+import Predictions from './pages/Predictions';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="min-h-screen bg-gray-100">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/create-league" element={<CreateLeague />} />
+          <Route path="/invite-users" element={<InviteUsers />} />
+          <Route path="/matches" element={<Matches />} />
+          <Route path="/predictions" element={<Predictions />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
