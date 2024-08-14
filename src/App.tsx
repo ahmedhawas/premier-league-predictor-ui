@@ -8,6 +8,7 @@ import Predictions from './pages/Predictions';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
+import MatchPrediction from './pages/MatchPrediction';
 
 const App: React.FC = () => {
   return (
@@ -22,6 +23,7 @@ const App: React.FC = () => {
           <Route path="/predictions" element={<Predictions />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/league/:id/matches/:matchId" element={<MatchPrediction />} />
         </Routes>
       </div>
     </Router>
