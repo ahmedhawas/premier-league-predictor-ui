@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import axios from 'axios'; // Import axios
@@ -7,6 +8,7 @@ import { toast } from 'react-toastify';
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [accessCode, setAccessCode] = useState('');
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +22,11 @@ const Login: React.FC = () => {
       if (response.status === 200 && response.data.auth_token) {
         localStorage.setItem('auth_token', response.data.auth_token);
         toast.success('Login successful!');
+        navigate('/dashboard'); // Redirect to the dashboard page
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        toast.error("Failed to login.");
+        toast.error(`Error: ${error.response.status}`);
       } else {
         toast.error('An unexpected error occurred.');
       }

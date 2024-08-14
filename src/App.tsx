@@ -12,6 +12,7 @@ import Navbar from './components/Navbar';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard'; // Import the Dashboard component
 
 const App: React.FC = () => {
   return (
@@ -22,11 +23,12 @@ const App: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} /> {/* Dashboard route */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/league/:id/matches/:matchId" element={<MatchPrediction />} />
           {/* Add other routes as needed */}
         </Routes>
-        <ToastContainer /> {/* Add the ToastContainer here */}
+        <ToastContainer />
       </div>
     </Router>
   );
