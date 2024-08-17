@@ -22,7 +22,7 @@ const Login: React.FC = () => {
       if (response.status === 200 && response.data.auth_token) {
         localStorage.setItem('auth_token', response.data.auth_token);
         toast.success('Login successful!');
-        navigate('/dashboard'); // Redirect to the dashboard page
+        navigate('/match-predictions');
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
