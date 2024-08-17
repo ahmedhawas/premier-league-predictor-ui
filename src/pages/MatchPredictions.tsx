@@ -3,11 +3,10 @@ import api from '../utils/api';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { toCamelCase } from '../utils/toCamelCase';
+import { MatchWrapper } from '../types/types'; // Import the types
 
 const MatchPredictions: React.FC = () => {
-  const [matches, setMatches] = useState([]);
-  const [filteredMatches, setFilteredMatches] = useState([]);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [matches, setMatches] = useState<MatchWrapper[]>([]);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -15,7 +14,6 @@ const MatchPredictions: React.FC = () => {
         const response = await api.get('/leagues/:league_id/matches');
         const camelCasedData = toCamelCase(response.data.matches);
         setMatches(camelCasedData);
-        setFilteredMatches(camelCasedData);
       } catch (error) {
         console.error('Error fetching matches:', error);
       }
@@ -23,17 +21,6 @@ const MatchPredictions: React.FC = () => {
 
     fetchMatches();
   }, []);
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = e.target.value;
-    setSelectedDate(selectedDate);
-
-    const filtered = matches.filter((match: any) =>
-      formatValidDate(match.match.startTime) === selectedDate
-    );
-
-    setFilteredMatches(filtered);
-  };
 
   const formatValidDate = (dateString: string | undefined): string => {
     try {
@@ -46,39 +33,82 @@ const MatchPredictions: React.FC = () => {
     }
   };
 
-  const handlePredictionChange = async (
+  const handlePredictionChange = (
     matchId: number,
     homeTeamGoals: number,
     awayTeamGoals: number
   ) => {
+    setMatches((prevMatches) =>
+      prevMatches.map((matchWrapper) => {
+        if (matchWrapper.match.id === matchId) {
+          const updatedPrediction = {
+            ...matchWrapper.matchPrediction[0],
+            homeTeamGoals,
+            awayTeamGoals,
+          };
+
+          return {
+            ...matchWrapper,
+            matchPrediction: matchWrapper.matchPrediction.length > 0 
+              ? [updatedPrediction] 
+              : [updatedPrediction],
+          };
+        }
+        return matchWrapper;
+      })
+    );
+  };
+
+  const handlePredictionSubmit = async (matchId: number) => {
+    const match = matches.find((matchWrapper) => matchWrapper.match.id === matchId);
+    if (!match) return;
+  
+    const { homeTeamGoals, awayTeamGoals } = match.matchPrediction[0] || {};
+  
     try {
-      await api.post(`/leagues/:league_id/matches/${matchId}/match_predictions`, {
-        home_team_goals: homeTeamGoals,
-        away_team_goals: awayTeamGoals,
-      });
-      // Update match predictions state here
+      if (match.matchPrediction.length > 0 && match.matchPrediction[0].id) {
+        // Update existing prediction (PUT)
+        const predictionId = match.matchPrediction[0].id;
+        await api.put(`/leagues/:league_id/matches/${matchId}/match_predictions/${predictionId}`, {
+          home_team_goals: homeTeamGoals,
+          away_team_goals: awayTeamGoals,
+        });
+      } else {
+        // Add new prediction (POST)
+        const response = await api.post(`/leagues/:league_id/matches/${matchId}/match_predictions`, {
+          home_team_goals: homeTeamGoals,
+          away_team_goals: awayTeamGoals,
+        });
+  
+        // Update the state with the new prediction
+        const newPrediction = response.data;
+        setMatches((prevMatches) =>
+          prevMatches.map((matchWrapper) => {
+            if (matchWrapper.match.id === matchId) {
+              return {
+                ...matchWrapper,
+                matchPrediction: [newPrediction],
+              };
+            }
+            return matchWrapper;
+          })
+        );
+      }
     } catch (error) {
       console.error('Error submitting prediction:', error);
     }
-  };
+  };  
 
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold text-[#121212] mb-6">Match Predictions</h1>
 
-      <div className="mb-6">
-        <label className="block text-lg mb-2">Filter by Date:</label>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={handleDateChange}
-          className="p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#BB86FC]"
-        />
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredMatches.map((matchWrapper: any) => {
+        {matches.map((matchWrapper) => {
           const { match, matchPrediction } = matchWrapper;
+
+          const homeTeamGoals = matchPrediction[0]?.homeTeamGoals || 0;
+          const awayTeamGoals = matchPrediction[0]?.awayTeamGoals || 0;
 
           return (
             <motion.div
@@ -96,53 +126,34 @@ const MatchPredictions: React.FC = () => {
               <div className="text-center mb-4">
                 <p className="text-lg">{formatValidDate(match.startTime)}</p>
               </div>
-              {matchPrediction.length > 0 ? (
-                <div className="text-center">
-                  <p className="text-lg mb-2">Your Prediction:</p>
-                  <div className="flex justify-center items-center space-x-2">
-                    <input
-                      type="number"
-                      value={matchPrediction[0].homeTeamGoals}
-                      onChange={(e) =>
-                        handlePredictionChange(match.id, parseInt(e.target.value), matchPrediction[0].awayTeamGoals)
-                      }
-                      className="w-12 p-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <span className="text-lg font-bold">-</span>
-                    <input
-                      type="number"
-                      value={matchPrediction[0].awayTeamGoals}
-                      onChange={(e) =>
-                        handlePredictionChange(match.id, matchPrediction[0].homeTeamGoals, parseInt(e.target.value))
-                      }
-                      className="w-12 p-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                  </div>
+              <div className="text-center">
+                <p className="text-lg mb-2">{matchPrediction.length > 0 ? 'Your Prediction:' : 'Make Your Prediction:'}</p>
+                <div className="flex justify-center items-center space-x-2 mb-4">
+                  <input
+                    type="number"
+                    value={homeTeamGoals}
+                    onChange={(e) =>
+                      handlePredictionChange(match.id, parseInt(e.target.value), awayTeamGoals)
+                    }
+                    className="w-12 p-2 border border-gray-300 rounded focus:outline-none"
+                  />
+                  <span className="text-lg font-bold">-</span>
+                  <input
+                    type="number"
+                    value={awayTeamGoals}
+                    onChange={(e) =>
+                      handlePredictionChange(match.id, homeTeamGoals, parseInt(e.target.value))
+                    }
+                    className="w-12 p-2 border border-gray-300 rounded focus:outline-none"
+                  />
                 </div>
-              ) : (
-                <div className="text-center">
-                  <p className="text-lg mb-2">Make Your Prediction:</p>
-                  <div className="flex justify-center items-center space-x-2">
-                    <input
-                      type="number"
-                      placeholder="0"
-                      onChange={(e) =>
-                        handlePredictionChange(match.id, parseInt(e.target.value), 0)
-                      }
-                      className="w-12 p-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <span className="text-lg font-bold">-</span>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      onChange={(e) =>
-                        handlePredictionChange(match.id, 0, parseInt(e.target.value))
-                      }
-                      className="w-12 p-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                  </div>
-                </div>
-              )}
+                <button
+                  onClick={() => handlePredictionSubmit(match.id)}
+                  className="bg-[#BB86FC] text-white px-4 py-2 rounded font-semibold hover:bg-[#3700B3] transition"
+                >
+                  {matchPrediction.length > 0 ? 'Update Prediction' : 'Add Prediction'}
+                </button>
+              </div>
             </motion.div>
           );
         })}

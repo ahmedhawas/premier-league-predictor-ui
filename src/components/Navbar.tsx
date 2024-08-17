@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
       <div className="flex items-center space-x-4">
         {isLoggedIn ? (
           <>
-            <Link to="/profile" className="text-[#E0E0E0] hover:text-[#BB86FC]">Matches</Link>
+            <Link to="/match-predictions" className="text-[#E0E0E0] hover:text-[#BB86FC]">Matches</Link>
             <button
               onClick={handleLogout}
               className="bg-[#03DAC6] text-[#121212] px-4 py-2 rounded hover:bg-[#3700B3] transition"
