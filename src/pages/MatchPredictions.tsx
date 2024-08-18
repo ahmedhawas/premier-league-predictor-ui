@@ -81,7 +81,9 @@ const MatchPredictions: React.FC = () => {
         });
   
         // Update the state with the new prediction
-        const newPrediction = response.data;
+        const data = toCamelCase(response.data);
+        const newPrediction = data.matchPrediction;
+        console.log('newPrediction ', newPrediction);
         setMatches((prevMatches) =>
           prevMatches.map((matchWrapper) => {
             if (matchWrapper.match.id === matchId) {
