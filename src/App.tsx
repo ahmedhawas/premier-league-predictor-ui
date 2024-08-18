@@ -4,10 +4,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from './pages/Home';
 import MatchPrediction from './pages/MatchPrediction';
-import CreateLeague from './pages/CreateLeague';
-import InviteUsers from './pages/InviteUsers';
-import Matches from './pages/Matches';
-import Predictions from './pages/Predictions';
+import TablePredictor from './pages/TablePredictor';
+import MiniLeagues from './pages/MiniLeagues';
+import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
@@ -23,7 +22,10 @@ const App: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/match-predictions" element={<MatchPredictions />} /> {/* Update the route */}
+          <Route path="/match-predictions" element={<MatchPredictions />} />
+          <Route path="/table-predictor" element={<TablePredictor />} />
+          <Route path="/mini-leagues" element={<MiniLeagues />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/league/:id/matches/:matchId" element={<MatchPrediction />} />
           {/* Add other routes as needed */}
